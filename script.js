@@ -638,6 +638,8 @@ if (isTouch) {
 })();
 
 // ===== 13. AI Agents: rangeen cursors page ko "build" karte hain =====
+// Agents asal mouse cursor se ek ke peeche ek (line mein) nikalte hain, kaam karte hain,
+// aur kaam khatam hone par wapas line bana kar cursor ke andar ghus kar ghayab ho jate hain.
 (function () {
   const status = document.getElementById('agStatus');
   if (!status || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -647,6 +649,7 @@ if (isTouch) {
   const toggleBtn = document.getElementById('agToggle');
 
   const isSmall = window.innerWidth < 768;
+  const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   const COUNT = isSmall ? 6 : 12;
   const COLORS = ['#2563eb', '#7c3aed', '#db2777', '#f59e0b', '#16a34a', '#0891b2',
                   '#ef4444', '#6366f1', '#ea580c', '#0d9488', '#65a30d', '#c026d3'];
@@ -673,10 +676,7 @@ if (isTouch) {
     el.style.setProperty('--c', COLORS[i]);
     el.innerHTML = arrow + `<span>${NAMES[i]}</span>`;
     layer.appendChild(el);
-    const side = i % 4;
-    const x = side === 0 ? -40 : side === 1 ? innerWidth + 40 : Math.random() * innerWidth;
-    const y = scrollY + (side === 2 ? -40 : side === 3 ? innerHeight + 40 : Math.random() * innerHeight);
-    agents.push({ el, color: COLORS[i], x, y, tx: x, ty: y, busy: false, speed: .1 + Math.random() * .06 });
+    agents.push({ el, color: COLORS[i], x: -60, y: -60, tx: -60, ty: -60, s: 0, ts: 0, busy: false, speed: .14, hidden: true });
   }
   dotsEl.innerHTML = COLORS.slice(0, 5).map(c => `<b style="background:${c}"></b>`).join('');
 
@@ -684,16 +684,77 @@ if (isTouch) {
   sizeLayer();
   new ResizeObserver(sizeLayer).observe(document.body);
 
-  // ---- Movement loop ----
+  // ---- Asal cursor ki jagah (mobile par status bar ke dots) ----
+  let mouse = null;
+  window.addEventListener('mousemove', e => { mouse = { x: e.clientX, y: e.clientY }; });
+  function home() {
+    if (hasMouse && mouse) return { x: mouse.x + scrollX, y: mouse.y + scrollY };
+    const r = dotsEl.getBoundingClientRect();
+    if (r.width) return { x: r.left + 8 + scrollX, y: r.top + 4 + scrollY };
+    return { x: -40, y: scrollY + innerHeight * .4 };
+  }
+
+  // mode: 'away' (cursor ke andar) | 'enter' (line mein nikal rahe) | 'work' | 'return' (wapas ja rahe)
+  let mode = 'away', modeAt = 0, idleSince = 0;
+
+  // ---- Movement loop (har computer par ek jaisi raftaar) ----
+  let lastT = performance.now();
   function loop() {
+    const now = performance.now();
+    const dt = Math.min(4, (now - lastT) / 16.67); lastT = now;
+    const h = home();
+
+    if (mode === 'enter') {
+      // Leader pehle kaam ki taraf, baqi ek ke peeche ek
+      const first = queue[0] ? pageRect(queue[0].el) : { x: innerWidth / 2, y: scrollY + innerHeight / 2 };
+      agents.forEach((a, i) => {
+        a.speed = i === 0 ? .07 : .22;
+        if (i === 0) { a.tx = first.x - 4; a.ty = first.y - 4; }
+        else { a.tx = agents[i - 1].x - 14; a.ty = agents[i - 1].y - 10; }
+        // ek ke baad ek nikle
+        if (now - modeAt > i * 70) { a.hidden = false; a.ts = 1; }
+      });
+      if (now - modeAt > 900 + COUNT * 70) { mode = 'work'; modeAt = now; }
+    }
+
+    if (mode === 'return') {
+      // Leader cursor ki taraf, baqi peeche peeche, aur cursor mein ghus kar ghayab
+      agents.forEach((a, i) => {
+        a.speed = i === 0 ? .16 : .3;
+        const prev = agents[i - 1];
+        const tgt = i === 0 || prev.hidden ? h : { x: prev.x, y: prev.y };
+        a.tx = tgt.x; a.ty = tgt.y;
+        const late = now - modeAt > 2600;          // hifazat: zyada der na lage
+        if (!a.hidden && (Math.hypot(a.x - h.x, a.y - h.y) < 22 || late)) { a.hidden = true; a.ts = 0; pulseCursor(a.color); }
+      });
+      if (agents.every(a => a.hidden && a.s < .05)) { mode = 'away'; }
+    }
+
+    if (mode === 'away') {
+      agents.forEach(a => { a.tx = a.x = h.x; a.ty = a.y = h.y; a.ts = 0; a.hidden = true; });
+    }
+
     for (const a of agents) {
-      a.x += (a.tx - a.x) * a.speed;
-      a.y += (a.ty - a.y) * a.speed;
-      a.el.style.transform = `translate(${a.x}px, ${a.y}px)`;
+      const k = 1 - Math.pow(1 - a.speed, dt);
+      a.x += (a.tx - a.x) * k;
+      a.y += (a.ty - a.y) * k;
+      a.s += (a.ts - a.s) * (1 - Math.pow(.8, dt));
+      a.el.style.transform = `translate(${a.x}px, ${a.y}px) scale(${a.s.toFixed(3)})`;
+      a.el.style.opacity = a.s.toFixed(3);
     }
     requestAnimationFrame(loop);
   }
-  requestAnimationFrame(loop);
+
+  // Cursor par halki si chamak jab agent andar jaye
+  const ring = document.getElementById('cursorRing');
+  let pulseT;
+  function pulseCursor(color) {
+    if (!ring || !hasMouse) return;
+    ring.style.boxShadow = `0 0 0 6px ${color}55, 0 0 18px ${color}`;
+    ring.style.borderColor = color;
+    clearTimeout(pulseT);
+    pulseT = setTimeout(() => { ring.style.boxShadow = ''; ring.style.borderColor = ''; }, 220);
+  }
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   function arrive(a, max = 900) {
@@ -730,12 +791,12 @@ if (isTouch) {
   }
 
   async function runTask(a, task) {
-    a.busy = true; if (task.build) active++;
+    a.busy = true; active++;
     const el = task.el;
     let r = pageRect(el);
-    // Bohat door ho to bas dikha do (fast scroll)
-    if (task.build && (r.vBottom < -innerHeight || r.vTop > innerHeight * 2 || r.w === 0)) {
-      unpend(el); a.busy = false; active--; buildCount++; return;
+    // Bohat door ho (fast scroll) to bas dikha do
+    if (r.vBottom < -innerHeight || r.vTop > innerHeight * 2 || r.w === 0) {
+      unpend(el); buildCount++; a.busy = false; active--; return;
     }
     a.speed = .16;
     a.tx = r.x - 4; a.ty = r.y - 4;
@@ -743,7 +804,7 @@ if (isTouch) {
     r = pageRect(el);
 
     const box = document.createElement('div');
-    box.className = 'ag-box' + (task.build ? '' : ' inspect');
+    box.className = 'ag-box';
     box.style.cssText = `--c:${a.color};left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px`;
     box.innerHTML = `<i></i><i></i><i></i><i></i><span class="ag-tag">${label(el)}</span>`;
     if (r.y - scrollY < 90) box.querySelector('.ag-tag').style.top = '4px';
@@ -753,13 +814,15 @@ if (isTouch) {
     // Kona kheench kar box banaye
     a.speed = .09;
     a.tx = r.x + r.w - 6; a.ty = r.y + r.h - 6;
-    await sleep(task.build ? 480 : 700);
-    if (task.build) { unpend(el); buildCount++; }
-    await sleep(task.build ? 380 : 500);
+    await sleep(480);
+    unpend(el); buildCount++;
+    await sleep(380);
     box.classList.add('out');
     setTimeout(() => box.remove(), 400);
-    a.speed = .1 + Math.random() * .06;
-    a.busy = false; if (task.build) active--;
+    a.speed = .14;
+    // Thora sa side par hat jaye
+    a.tx += (Math.random() - .5) * 120; a.ty += (Math.random() - .5) * 80;
+    a.busy = false; active--;
   }
 
   function sectionName(el) {
@@ -769,38 +832,59 @@ if (isTouch) {
     return s.id || (s.classList.contains('footer') ? 'footer' : 'section');
   }
 
-  function updateStatus(current) {
+  let lastSection = '';
+  function updateStatus() {
     if (!enabled) return;
-    if (queue.length || active) {
-      textEl.innerHTML = `<strong>${COUNT} agents</strong> building ${current || 'page'}…`;
+    if (mode === 'enter' || queue.length || active) {
+      textEl.innerHTML = `<strong>${COUNT} agents</strong> building ${lastSection || 'page'}…`;
+    } else if (mode === 'return') {
+      textEl.innerHTML = `Agents returning to your cursor…`;
     } else if (buildCount) {
       const secs = ((performance.now() - buildStart) / 1000).toFixed(1);
       textEl.innerHTML = `Built by <strong>${COUNT} agents</strong> · ${buildCount} blocks in ${secs}s`;
     }
   }
 
-  let lastSection = '';
+  // ---- Dispatcher ----
   setInterval(() => {
-    if (!enabled || performance.now() < startAt) return;
-    for (const a of agents) {
-      if (a.busy || !queue.length) continue;
-      const task = queue.shift();
-      if (!buildStart) buildStart = performance.now();
-      lastSection = sectionName(task.el);
-      runTask(a, task);
+    const now = performance.now();
+    if (!enabled || now < startAt) return;
+
+    if (queue.length && (mode === 'away' || mode === 'return')) {
+      // Cursor se line bana kar nikle (ya wapas jaate jaate mud jayen)
+      if (mode === 'away') {
+        const h = home();
+        agents.forEach(a => { a.x = a.tx = h.x; a.y = a.ty = h.y; a.s = 0; });
+      }
+      if (!buildStart || mode === 'away') { buildStart = now; buildCount = 0; }
+      lastSection = sectionName(queue[0].el);
+      mode = 'enter'; modeAt = now;
     }
-    updateStatus(lastSection);
+
+    if (mode === 'work') {
+      for (const a of agents) {
+        if (a.busy || !queue.length) continue;
+        const task = queue.shift();
+        lastSection = sectionName(task.el);
+        runTask(a, task);
+      }
+      // Sab kaam khatam: thori der ruk kar wapas cursor mein
+      if (!queue.length && !active) {
+        if (!idleSince) idleSince = now;
+        if (now - idleSince > 900) { mode = 'return'; modeAt = now; idleSince = 0; }
+      } else idleSince = 0;
+    }
+    updateStatus();
   }, 70);
 
   function enqueue(el) {
     if (built.has(el)) return;
     built.add(el);
     el.classList.add('ag-pending');
-    queue.push({ el, build: true });
-    setTimeout(() => unpend(el), 7000);     // hifazat: kabhi chhupa na rahe
+    queue.push({ el });
+    setTimeout(() => unpend(el), 8000);     // hifazat: kabhi chhupa na rahe
   }
 
-  // Element screen ke qareeb aaye to "pending" + queue
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (!e.isIntersecting || !enabled) return;
@@ -810,35 +894,8 @@ if (isTouch) {
     });
   }, { rootMargin: '0px 0px 15% 0px' });
 
-  function observeAll() {
-    document.querySelectorAll(TARGETS).forEach(el => io.observe(el));
-  }
-
-  // Tab badalne par naye cards bhi build hon
+  function observeAll() { document.querySelectorAll(TARGETS).forEach(el => io.observe(el)); }
   document.querySelectorAll('.work-tab').forEach(t => t.addEventListener('click', () => setTimeout(observeAll, 50)));
-
-  // ---- Khaali agents ghoomte rahen + kabhi kabhi kuch "inspect" karen ----
-  setInterval(() => {
-    if (!enabled) return;
-    for (const a of agents) {
-      if (a.busy || Math.random() > .35) continue;
-      a.tx = 20 + Math.random() * (innerWidth - 60);
-      a.ty = scrollY + 80 + Math.random() * (innerHeight - 140);
-    }
-  }, 1300);
-
-  setInterval(() => {
-    if (!enabled || queue.length || performance.now() < startAt + 2500) return;
-    const free = agents.filter(a => !a.busy);
-    if (!free.length) return;
-    const visible = [...document.querySelectorAll(TARGETS)].filter(el => {
-      const r = el.getBoundingClientRect();
-      return r.width > 0 && r.top > 70 && r.bottom < innerHeight - 20 && r.height < innerHeight * .7;
-    });
-    if (!visible.length) return;
-    const a = free[Math.floor(Math.random() * free.length)];
-    runTask(a, { el: visible[Math.floor(Math.random() * visible.length)], build: false });
-  }, isSmall ? 4200 : 2600);
 
   // ---- On / Off / Replay ----
   function setEnabled(on) {
@@ -852,6 +909,7 @@ if (isTouch) {
       : 'Turn on';
     if (!on) {
       queue.length = 0;
+      mode = 'away';
       document.querySelectorAll('.ag-pending').forEach(unpend);
       textEl.textContent = 'AI agents off';
     } else {
@@ -859,21 +917,19 @@ if (isTouch) {
       observeAll();
     }
   }
-
   toggleBtn.addEventListener('click', () => setEnabled(!enabled));
 
   replayBtn.addEventListener('click', () => {
     queue.length = 0;
-    buildCount = 0; buildStart = 0;
     document.documentElement.style.scrollBehavior = 'auto';
     window.scrollTo(0, 0);
     document.documentElement.style.scrollBehavior = '';
     document.querySelectorAll(TARGETS).forEach(el => built.delete(el));
-    // Agents screen ke kinaron par chale jayen, phir dobara aayen
-    agents.forEach((a, i) => { a.tx = i % 2 ? innerWidth + 40 : -40; a.ty = Math.random() * innerHeight; });
-    startAt = performance.now() + 500;
+    mode = 'away'; buildStart = 0;
+    startAt = performance.now() + 300;
     setTimeout(observeAll, 60);
   });
 
+  requestAnimationFrame(loop);
   setEnabled(enabled);
 })();
