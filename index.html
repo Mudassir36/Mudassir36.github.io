@@ -634,6 +634,18 @@
     </div>
   </footer>
 
+  <!-- ========== AI AGENTS status bar ========== -->
+  <div class="ag-status" id="agStatus" aria-live="polite">
+    <span class="ag-dots" id="agDots"></span>
+    <span class="ag-text" id="agText">Agents getting ready…</span>
+    <button type="button" class="ag-btn" id="agReplay" aria-label="Replay build">
+      <svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Replay
+    </button>
+    <button type="button" class="ag-btn ag-toggle" id="agToggle" aria-label="Turn agents off">
+      <svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
   <!-- ========== CHATBOT (Smart FAQ assistant) ========== -->
   <div class="chatbot" id="chatbot">
     <div class="chat-teaser" id="chatTeaser">

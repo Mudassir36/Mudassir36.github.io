@@ -1053,3 +1053,92 @@ body.dark .msg-actions a.wa { background: #0f2a1d; color: #4ade80; }
 @media (prefers-reduced-motion: reduce) {
   .chat-launcher::before { animation: none; }
 }
+
+/* =========================================================
+   23. AI Agents: rangeen cursors jo page ko "build" karte hain
+   ========================================================= */
+.ag-layer { position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; z-index: 120; overflow: hidden; }
+.agent { position: absolute; left: 0; top: 0; will-change: transform; transition: opacity .4s; }
+.agent svg { width: 19px; height: 19px; display: block; filter: drop-shadow(0 2px 4px rgba(0,0,0,.25)); }
+.agent svg path { fill: var(--c); stroke: #fff; stroke-width: 1.6; stroke-linejoin: round; }
+.agent span {
+  position: absolute; left: 15px; top: 17px; white-space: nowrap;
+  font: 600 10.5px/1 'Inter', sans-serif; color: #fff; background: var(--c);
+  padding: 4px 7px; border-radius: 3px 8px 8px 8px; box-shadow: 0 4px 10px -2px rgba(0,0,0,.25);
+}
+.ag-layer.hide-labels .agent span { display: none; }
+
+/* Selection box (Figma jaisa) */
+.ag-box {
+  position: absolute; border: 1.5px solid var(--c); border-radius: 3px;
+  background: color-mix(in srgb, var(--c) 7%, transparent);
+  clip-path: inset(0 100% 100% 0);
+  transition: clip-path .45s cubic-bezier(.65,0,.35,1), opacity .35s;
+}
+.ag-box.draw { clip-path: inset(-30px -10px -10px -10px); }
+.ag-box.out { opacity: 0; }
+.ag-box.inspect { border-style: dashed; background: transparent; }
+.ag-box i {
+  position: absolute; width: 7px; height: 7px; background: #fff;
+  border: 1.5px solid var(--c); border-radius: 1.5px;
+}
+.ag-box i:nth-of-type(1) { left: -4.5px; top: -4.5px; }
+.ag-box i:nth-of-type(2) { right: -4.5px; top: -4.5px; }
+.ag-box i:nth-of-type(3) { left: -4.5px; bottom: -4.5px; }
+.ag-box i:nth-of-type(4) { right: -4.5px; bottom: -4.5px; }
+.ag-tag {
+  position: absolute; left: -1.5px; top: -21px; white-space: nowrap;
+  font: 600 10px/1 ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  color: #fff; background: var(--c); padding: 4px 6px; border-radius: 3px 3px 3px 0;
+}
+
+/* Jo element abhi "ban" raha hai */
+.ag-pending { opacity: .07 !important; filter: blur(3px); }
+.ag-reveal { transition: opacity .55s ease, filter .55s ease, transform .55s ease !important; }
+
+/* Neeche status bar */
+.ag-status {
+  position: fixed; left: 50%; bottom: 22px; z-index: 140;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 6px 6px 14px; border-radius: 999px;
+  background: rgba(11,19,36,.86); color: #e2e8f0;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: 0 14px 34px -10px rgba(11,19,36,.5);
+  font: 500 12.5px 'Inter', sans-serif; white-space: nowrap;
+  transition: opacity .4s, transform .4s;
+}
+.ag-status.hidden { opacity: 0; transform: translate(-50%, 20px); pointer-events: none; }
+.ag-dots { display: flex; }
+.ag-dots b { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #0b1324; margin-left: -4px; }
+.ag-dots b:first-child { margin-left: 0; }
+.ag-text strong { color: #fff; }
+.ag-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: none; cursor: pointer; border-radius: 999px;
+  background: rgba(255,255,255,.1); color: #fff;
+  font: 600 12px 'Inter', sans-serif; padding: 6px 11px;
+  transition: background .2s;
+}
+.ag-btn:hover { background: rgba(255,255,255,.2); }
+.ag-btn .i { width: 13px; height: 13px; }
+.ag-toggle { padding: 6px; }
+.ag-status.off .ag-dots, .ag-status.off #agReplay { display: none; }
+.ag-status.off .ag-toggle { padding: 6px 11px; }
+body.dark .ag-status { background: rgba(16,24,43,.9); }
+
+@media (max-width: 600px) {
+  .ag-status {
+    left: 14px; bottom: 14px; transform: none; max-width: calc(100% - 90px);
+    gap: 7px; padding: 5px 5px 5px 10px; font-size: 11.5px;
+  }
+  .ag-status.hidden { transform: translateY(20px); }
+  .ag-text { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .ag-btn { padding: 5px 9px; font-size: 11px; }
+  .ag-dots b { width: 8px; height: 8px; }
+  .agent svg { width: 16px; height: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ag-layer, .ag-status { display: none; }
+}

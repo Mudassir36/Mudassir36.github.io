@@ -636,3 +636,244 @@ if (isTouch) {
   // 8 second baad chhota sa "Hi there" bubble
   setTimeout(() => { if (!started) teaser.classList.add('show'); }, 8000);
 })();
+
+// ===== 13. AI Agents: rangeen cursors page ko "build" karte hain =====
+(function () {
+  const status = document.getElementById('agStatus');
+  if (!status || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const textEl = document.getElementById('agText');
+  const dotsEl = document.getElementById('agDots');
+  const replayBtn = document.getElementById('agReplay');
+  const toggleBtn = document.getElementById('agToggle');
+
+  const isSmall = window.innerWidth < 768;
+  const COUNT = isSmall ? 6 : 12;
+  const COLORS = ['#2563eb', '#7c3aed', '#db2777', '#f59e0b', '#16a34a', '#0891b2',
+                  '#ef4444', '#6366f1', '#ea580c', '#0d9488', '#65a30d', '#c026d3'];
+  const NAMES = ['Layout', 'Copy', 'Design', 'Motion', 'QA', 'SEO',
+                 'Grid', 'Type', 'Color', 'A11y', 'Perf', 'Polish'];
+  const TARGETS = 'h1, .role, .lead, .status-badge, .hero-buttons .btn, .stat, .avatar-wrap, ' +
+    '.section-tag, h2.section-title, .section-sub, .founder-card, .product-strip, .feature, .skill, ' +
+    '.step, .work-tabs, .projects-grid > .project, .video-card, .design-card, .service, .cta-card, ' +
+    '.contact-item, .contact-form, .footer-brand';
+
+  let enabled = true;
+  try { enabled = localStorage.getItem('agents') !== 'off'; } catch (e) {}
+
+  // ---- Layer + agents ----
+  const layer = document.createElement('div');
+  layer.className = 'ag-layer' + (isSmall ? ' hide-labels' : '');
+  document.body.appendChild(layer);
+
+  const arrow = '<svg viewBox="0 0 24 24"><path d="M4 2.5l15.5 9-6.8 1.6-3.6 6.4z"/></svg>';
+  const agents = [];
+  for (let i = 0; i < COUNT; i++) {
+    const el = document.createElement('div');
+    el.className = 'agent';
+    el.style.setProperty('--c', COLORS[i]);
+    el.innerHTML = arrow + `<span>${NAMES[i]}</span>`;
+    layer.appendChild(el);
+    const side = i % 4;
+    const x = side === 0 ? -40 : side === 1 ? innerWidth + 40 : Math.random() * innerWidth;
+    const y = scrollY + (side === 2 ? -40 : side === 3 ? innerHeight + 40 : Math.random() * innerHeight);
+    agents.push({ el, color: COLORS[i], x, y, tx: x, ty: y, busy: false, speed: .1 + Math.random() * .06 });
+  }
+  dotsEl.innerHTML = COLORS.slice(0, 5).map(c => `<b style="background:${c}"></b>`).join('');
+
+  function sizeLayer() { layer.style.height = document.documentElement.scrollHeight + 'px'; }
+  sizeLayer();
+  new ResizeObserver(sizeLayer).observe(document.body);
+
+  // ---- Movement loop ----
+  function loop() {
+    for (const a of agents) {
+      a.x += (a.tx - a.x) * a.speed;
+      a.y += (a.ty - a.y) * a.speed;
+      a.el.style.transform = `translate(${a.x}px, ${a.y}px)`;
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function arrive(a, max = 900) {
+    return new Promise(res => {
+      const t0 = performance.now();
+      (function check() {
+        if (Math.hypot(a.tx - a.x, a.ty - a.y) < 6 || performance.now() - t0 > max) res();
+        else requestAnimationFrame(check);
+      })();
+    });
+  }
+  function pageRect(el) {
+    const r = el.getBoundingClientRect();
+    return { x: r.left + scrollX, y: r.top + scrollY, w: r.width, h: r.height, vTop: r.top, vBottom: r.bottom };
+  }
+  function label(el) {
+    const tag = el.tagName.toLowerCase();
+    const cls = [...el.classList].find(c => !/^(reveal|visible|ag-pending|ag-reveal)$/.test(c)) || '';
+    const r = el.getBoundingClientRect();
+    return `${tag}${cls ? '.' + cls : ''} · ${Math.round(r.width)}×${Math.round(r.height)}`;
+  }
+
+  // ---- Build queue ----
+  const queue = [];
+  const built = new WeakSet();
+  let startAt = performance.now() + (document.getElementById('intro') ? 2300 : 300);
+  let buildStart = 0, buildCount = 0, active = 0;
+
+  function unpend(el) {
+    if (!el.classList.contains('ag-pending')) return;
+    el.classList.add('ag-reveal');
+    el.classList.remove('ag-pending');
+    setTimeout(() => el.classList.remove('ag-reveal'), 650);
+  }
+
+  async function runTask(a, task) {
+    a.busy = true; if (task.build) active++;
+    const el = task.el;
+    let r = pageRect(el);
+    // Bohat door ho to bas dikha do (fast scroll)
+    if (task.build && (r.vBottom < -innerHeight || r.vTop > innerHeight * 2 || r.w === 0)) {
+      unpend(el); a.busy = false; active--; buildCount++; return;
+    }
+    a.speed = .16;
+    a.tx = r.x - 4; a.ty = r.y - 4;
+    await arrive(a);
+    r = pageRect(el);
+
+    const box = document.createElement('div');
+    box.className = 'ag-box' + (task.build ? '' : ' inspect');
+    box.style.cssText = `--c:${a.color};left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px`;
+    box.innerHTML = `<i></i><i></i><i></i><i></i><span class="ag-tag">${label(el)}</span>`;
+    if (r.y - scrollY < 90) box.querySelector('.ag-tag').style.top = '4px';
+    layer.appendChild(box);
+    requestAnimationFrame(() => box.classList.add('draw'));
+
+    // Kona kheench kar box banaye
+    a.speed = .09;
+    a.tx = r.x + r.w - 6; a.ty = r.y + r.h - 6;
+    await sleep(task.build ? 480 : 700);
+    if (task.build) { unpend(el); buildCount++; }
+    await sleep(task.build ? 380 : 500);
+    box.classList.add('out');
+    setTimeout(() => box.remove(), 400);
+    a.speed = .1 + Math.random() * .06;
+    a.busy = false; if (task.build) active--;
+  }
+
+  function sectionName(el) {
+    const s = el.closest('section, footer');
+    if (!s) return 'page';
+    if (s.id === 'home') return 'hero';
+    return s.id || (s.classList.contains('footer') ? 'footer' : 'section');
+  }
+
+  function updateStatus(current) {
+    if (!enabled) return;
+    if (queue.length || active) {
+      textEl.innerHTML = `<strong>${COUNT} agents</strong> building ${current || 'page'}…`;
+    } else if (buildCount) {
+      const secs = ((performance.now() - buildStart) / 1000).toFixed(1);
+      textEl.innerHTML = `Built by <strong>${COUNT} agents</strong> · ${buildCount} blocks in ${secs}s`;
+    }
+  }
+
+  let lastSection = '';
+  setInterval(() => {
+    if (!enabled || performance.now() < startAt) return;
+    for (const a of agents) {
+      if (a.busy || !queue.length) continue;
+      const task = queue.shift();
+      if (!buildStart) buildStart = performance.now();
+      lastSection = sectionName(task.el);
+      runTask(a, task);
+    }
+    updateStatus(lastSection);
+  }, 70);
+
+  function enqueue(el) {
+    if (built.has(el)) return;
+    built.add(el);
+    el.classList.add('ag-pending');
+    queue.push({ el, build: true });
+    setTimeout(() => unpend(el), 7000);     // hifazat: kabhi chhupa na rahe
+  }
+
+  // Element screen ke qareeb aaye to "pending" + queue
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting || !enabled) return;
+      if (e.target.offsetParent === null) return;
+      enqueue(e.target);
+      io.unobserve(e.target);
+    });
+  }, { rootMargin: '0px 0px 15% 0px' });
+
+  function observeAll() {
+    document.querySelectorAll(TARGETS).forEach(el => io.observe(el));
+  }
+
+  // Tab badalne par naye cards bhi build hon
+  document.querySelectorAll('.work-tab').forEach(t => t.addEventListener('click', () => setTimeout(observeAll, 50)));
+
+  // ---- Khaali agents ghoomte rahen + kabhi kabhi kuch "inspect" karen ----
+  setInterval(() => {
+    if (!enabled) return;
+    for (const a of agents) {
+      if (a.busy || Math.random() > .35) continue;
+      a.tx = 20 + Math.random() * (innerWidth - 60);
+      a.ty = scrollY + 80 + Math.random() * (innerHeight - 140);
+    }
+  }, 1300);
+
+  setInterval(() => {
+    if (!enabled || queue.length || performance.now() < startAt + 2500) return;
+    const free = agents.filter(a => !a.busy);
+    if (!free.length) return;
+    const visible = [...document.querySelectorAll(TARGETS)].filter(el => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.top > 70 && r.bottom < innerHeight - 20 && r.height < innerHeight * .7;
+    });
+    if (!visible.length) return;
+    const a = free[Math.floor(Math.random() * free.length)];
+    runTask(a, { el: visible[Math.floor(Math.random() * visible.length)], build: false });
+  }, isSmall ? 4200 : 2600);
+
+  // ---- On / Off / Replay ----
+  function setEnabled(on) {
+    enabled = on;
+    try { localStorage.setItem('agents', on ? 'on' : 'off'); } catch (e) {}
+    layer.style.display = on ? '' : 'none';
+    status.classList.toggle('off', !on);
+    toggleBtn.setAttribute('aria-label', on ? 'Turn agents off' : 'Turn agents on');
+    toggleBtn.innerHTML = on
+      ? '<svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>'
+      : 'Turn on';
+    if (!on) {
+      queue.length = 0;
+      document.querySelectorAll('.ag-pending').forEach(unpend);
+      textEl.textContent = 'AI agents off';
+    } else {
+      textEl.textContent = 'Agents getting ready…';
+      observeAll();
+    }
+  }
+
+  toggleBtn.addEventListener('click', () => setEnabled(!enabled));
+
+  replayBtn.addEventListener('click', () => {
+    queue.length = 0;
+    buildCount = 0; buildStart = 0;
+    document.documentElement.style.scrollBehavior = 'auto';
+    window.scrollTo(0, 0);
+    document.documentElement.style.scrollBehavior = '';
+    document.querySelectorAll(TARGETS).forEach(el => built.delete(el));
+    // Agents screen ke kinaron par chale jayen, phir dobara aayen
+    agents.forEach((a, i) => { a.tx = i % 2 ? innerWidth + 40 : -40; a.ty = Math.random() * innerHeight; });
+    startAt = performance.now() + 500;
+    setTimeout(observeAll, 60);
+  });
+
+  setEnabled(enabled);
+})();
