@@ -474,37 +474,37 @@ if (isTouch) {
   const badge = document.getElementById('chatBadge');
   const teaser = document.getElementById('chatTeaser');
 
-  const WA = 'https://wa.me/923141356104?text=' + encodeURIComponent("Hi Mudassir, I came from your portfolio and I'd like to discuss a project.");
-  const waBtn = `<a class="wa" href="${WA}" target="_blank" rel="noopener">WhatsApp Mudassir</a>`;
+  const WA = 'https://wa.me/923141356104?text=' + encodeURIComponent("Hi Mudasir, I came from your portfolio and I'd like to discuss a project.");
+  const waBtn = `<a class="wa" href="${WA}" target="_blank" rel="noopener">WhatsApp Mudasir</a>`;
   const go = (id, text) => `<a href="#${id}" data-close>${text}</a>`;
 
   // ---- Jawab (aap yahan text badal sakte hain) ----
   const intents = [
     { id: 'greet', words: ['hi', 'hello', 'hey', 'salam', 'assalam', 'aoa', 'slam', 'hy', 'good morning', 'good evening'],
-      reply: `Hello, and welcome! I'm Mudassir's assistant. I can tell you about his <strong>services, products, past work</strong> and how to start a project. What would you like to know?` },
+      reply: `Hello, and welcome! I'm Mudasir's assistant. I can tell you about his <strong>services, products, past work</strong> and how to start a project. What would you like to know?` },
 
     { id: 'price', words: ['price', 'pricing', 'cost', 'charges', 'rate', 'rates', 'budget', 'fee', 'fees', 'kitne', 'kitna', 'paisay', 'paise', 'qeemat', 'how much', 'package'],
-      reply: `Every project is different, so Mudassir gives a <strong>fixed, clear quote</strong> after a free consultation. No hidden charges. Share what you need on WhatsApp and you'll usually get a plan and price the <strong>same day</strong>.`,
+      reply: `Every project is different, so Mudasir gives a <strong>fixed, clear quote</strong> after a free consultation. No hidden charges. Share what you need on WhatsApp and you'll usually get a plan and price the <strong>same day</strong>.`,
       actions: () => waBtn },
 
     { id: 'services', words: ['service', 'services', 'offer', 'what do you do', 'kya karte', 'kaam kya', 'help me', 'provide'],
-      reply: `Through <strong>Horizonium Tech</strong>, Mudassir offers:<ul><li><strong>Web Development</strong>: business websites, WordPress, WooCommerce</li><li><strong>Custom Software</strong>: management systems</li><li><strong>AI Solutions</strong>: chatbots, AI phone receptionist, automation</li><li><strong>Digital Services</strong>: SEO, social media design, Etsy SEO</li><li><strong>AI Videos &amp; Graphic Design</strong></li><li><strong>Custom E-books</strong></li></ul>`,
+      reply: `Through <strong>Horizonium Tech</strong>, Mudasir offers:<ul><li><strong>Web Development</strong>: business websites, WordPress, WooCommerce</li><li><strong>Custom Software</strong>: management systems</li><li><strong>AI Solutions</strong>: chatbots, AI phone receptionist, automation</li><li><strong>Digital Services</strong>: SEO, social media design, Etsy SEO</li><li><strong>AI Videos &amp; Graphic Design</strong></li><li><strong>Custom E-books</strong></li></ul>`,
       actions: () => go('services', 'See all services') },
 
     { id: 'web', words: ['website', 'web site', 'wordpress', 'woocommerce', 'elementor', 'online store', 'ecommerce', 'e-commerce', 'landing page', 'site'],
-      reply: `Yes! Mudassir builds <strong>fast, mobile-friendly websites</strong>: business sites, WordPress &amp; Elementor sites and WooCommerce online stores. Examples: the <strong>Al Ufuq Travel &amp; Tours</strong> website and <strong>horizoniumtech.com</strong>.`,
+      reply: `Yes! Mudasir builds <strong>fast, mobile-friendly websites</strong>: business sites, WordPress &amp; Elementor sites and WooCommerce online stores. Examples: the <strong>Al Ufuq Travel &amp; Tours</strong> website and <strong>horizoniumtech.com</strong>.`,
       actions: () => go('projects', 'View websites') + waBtn },
 
     { id: 'software', words: ['software', 'system', 'management', 'school', 'madrasa', 'madrassa', 'travel agency', 'housing', 'society', 'erp', 'crm', 'portal', 'dashboard', 'attendance', 'biometric', 'fingerprint'],
-      reply: `Mudassir builds <strong>custom management software</strong> that fits how your team works. Ready-made systems are also available and can be customised:<ul><li>Travel Agency System (bookings, clients, accounts)</li><li>School &amp; Madrasa System (fees, attendance, results)</li><li>Housing Society System (plots, charges, expenses)</li><li>Biometric Attendance (staff time, salary sheets)</li></ul>`,
+      reply: `Mudasir builds <strong>custom management software</strong> that fits how your team works. Ready-made systems are also available and can be customised:<ul><li>Travel Agency System (bookings, clients, accounts)</li><li>School &amp; Madrasa System (fees, attendance, results)</li><li>Housing Society System (plots, charges, expenses)</li><li>Biometric Attendance (staff time, salary sheets)</li></ul>`,
       actions: () => go('projects', 'See software work') + waBtn },
 
     { id: 'ai', words: ['ai', 'chatbot', 'chat bot', 'bot', 'automation', 'automate', 'receptionist', 'gpt', 'artificial'],
-      reply: `<strong>AI Solutions</strong> include:<ul><li>AI chatbots for your website &amp; WhatsApp</li><li>AI phone receptionist that answers calls</li><li>Workflow automation to save staff time</li></ul>Mudassir also makes <strong>AI product videos</strong> for ads and reels.`,
+      reply: `<strong>AI Solutions</strong> include:<ul><li>AI chatbots for your website &amp; WhatsApp</li><li>AI phone receptionist that answers calls</li><li>Workflow automation to save staff time</li></ul>Mudasir also makes <strong>AI product videos</strong> for ads and reels.`,
       actions: () => waBtn },
 
     { id: 'video', words: ['video', 'videos', 'reel', 'reels', 'commercial', 'ad', 'ads', 'advert', 'tiktok', 'animation'],
-      reply: `Mudassir creates <strong>AI product videos</strong>: cinematic product commercials and vertical 9:16 reels for Instagram &amp; TikTok. You can watch samples in the <strong>AI Videos</strong> tab.`,
+      reply: `Mudasir creates <strong>AI product videos</strong>: cinematic product commercials and vertical 9:16 reels for Instagram &amp; TikTok. You can watch samples in the <strong>AI Videos</strong> tab.`,
       actions: () => go('projects', 'Watch AI videos') },
 
     { id: 'design', words: ['design', 'graphic', 'poster', 'logo', 'social media', 'post', 'banner', 'flyer', 'canva'],
@@ -527,15 +527,15 @@ if (isTouch) {
       actions: () => go('process', 'See the process') + waBtn },
 
     { id: 'work', words: ['portfolio', 'projects', 'project', 'work', 'examples', 'samples', 'previous', 'clients', 'experience'],
-      reply: `Some recent work:<ul><li>Travel Agency Software (booking &amp; accounts)</li><li>School Attendance Software (fingerprint, Urdu UI)</li><li>Al Ufuq Travel &amp; Tours website</li><li>Horizonium Tech website</li><li>AI product videos &amp; graphic designs</li></ul>Mudassir has <strong>100+ projects</strong> and <strong>100+ happy clients</strong>.`,
+      reply: `Some recent work:<ul><li>Travel Agency Software (booking &amp; accounts)</li><li>School Attendance Software (fingerprint, Urdu UI)</li><li>Al Ufuq Travel &amp; Tours website</li><li>Horizonium Tech website</li><li>AI product videos &amp; graphic designs</li></ul>Mudasir has <strong>100+ projects</strong> and <strong>100+ happy clients</strong>.`,
       actions: () => go('projects', 'View all work') },
 
     { id: 'about', words: ['who', 'about', 'mudassir', 'founder', 'ceo', 'owner', 'horizonium', 'company', 'aap kaun'],
-      reply: `<strong>Mudassir Khan</strong> is a software developer and the <strong>Founder &amp; CEO of Horizonium Tech</strong>, a digital company building websites, custom software, AI tools and digital services for businesses, schools and agencies.`,
+      reply: `<strong>Muhammad Mudasir</strong> is a software developer and the <strong>Founder &amp; CEO of Horizonium Tech</strong>, a digital company building websites, custom software, AI tools and digital services for businesses, schools and agencies.`,
       actions: () => go('about', 'Read more') + `<a href="https://horizoniumtech.com/" target="_blank" rel="noopener">horizoniumtech.com</a>` },
 
     { id: 'contact', words: ['contact', 'whatsapp', 'phone', 'number', 'call', 'email', 'mail', 'reach', 'hire', 'talk', 'baat', 'raabta', 'rabta'],
-      reply: `You can reach Mudassir directly:<ul><li>WhatsApp / Phone: <strong>+92 314 1356104</strong></li><li>Email: <strong>mk5208694@gmail.com</strong></li></ul>WhatsApp is the fastest way to get a reply.`,
+      reply: `You can reach Mudasir directly:<ul><li>WhatsApp / Phone: <strong>+92 314 1356104</strong></li><li>Email: <strong>mk5208694@gmail.com</strong></li></ul>WhatsApp is the fastest way to get a reply.`,
       actions: () => waBtn + `<a href="mailto:mk5208694@gmail.com">Send email</a>` },
 
     { id: 'support', words: ['support', 'maintenance', 'hosting', 'server', 'backup', 'update', 'after'],
@@ -546,7 +546,7 @@ if (isTouch) {
       reply: `Software can be made in <strong>Urdu, English or both</strong>, so your staff can use it easily. Hijri and Gregorian dates are supported too.` },
 
     { id: 'thanks', words: ['thanks', 'thank you', 'thx', 'shukriya', 'shukria', 'jazakallah', 'jazak', 'ok', 'okay', 'great', 'nice'],
-      reply: `You're welcome! If you have a project in mind, Mudassir would be happy to help.`,
+      reply: `You're welcome! If you have a project in mind, Mudasir would be happy to help.`,
       actions: () => waBtn },
 
     { id: 'bye', words: ['bye', 'goodbye', 'allah hafiz', 'khuda hafiz', 'see you'],
@@ -554,7 +554,7 @@ if (isTouch) {
   ];
 
   const fallback = {
-    reply: `I'm not sure about that one. Mudassir can answer it personally. Message him on WhatsApp, or pick a topic below.`,
+    reply: `I'm not sure about that one. Mudasir can answer it personally. Message him on WhatsApp, or pick a topic below.`,
     actions: () => waBtn
   };
 
@@ -615,7 +615,7 @@ if (isTouch) {
     if (!started) {
       started = true;
       renderChips();
-      botReply({ reply: `Assalam o Alaikum! 👋 I'm <strong>Mudassir's assistant</strong>. Ask me about services, prices, past work or how to start a project.` });
+      botReply({ reply: `Assalam o Alaikum! 👋 I'm <strong>Mudasir's assistant</strong>. Ask me about services, prices, past work or how to start a project.` });
     }
     if (window.matchMedia('(hover: hover)').matches) setTimeout(() => input.focus(), 300);
   }
