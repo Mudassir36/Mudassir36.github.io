@@ -361,6 +361,15 @@ if (isTouch) {
 }
 
 // ===== 11. AI neural network background =====
+// Network ke rang theme color se aate hain
+const accentRGB = { p: '37,99,235', p2: '109,91,240', l: '96,165,250' };
+function readAccent() {
+  const cs = getComputedStyle(document.documentElement);
+  accentRGB.p = cs.getPropertyValue('--p-rgb').trim() || accentRGB.p;
+  accentRGB.p2 = cs.getPropertyValue('--p2-rgb').trim() || accentRGB.p2;
+  accentRGB.l = cs.getPropertyValue('--l-rgb').trim() || accentRGB.l;
+}
+readAccent();
 (function () {
   const canvas = document.getElementById('aiCanvas');
   if (!canvas) return;
@@ -391,8 +400,8 @@ if (isTouch) {
 
   function draw(t) {
     const dark = document.body.classList.contains('dark');
-    const lineRGB = dark ? '96,165,250' : '79,70,229';
-    const dotRGB = dark ? '147,197,253' : '37,99,235';
+    const lineRGB = dark ? accentRGB.l : accentRGB.p2;
+    const dotRGB = dark ? accentRGB.l : accentRGB.p;
     const lineA = dark ? .22 : .16;
     ctx.clearRect(0, 0, w, h);
 
@@ -429,12 +438,12 @@ if (isTouch) {
       if (n.hub) {
         const pulse = reduced ? 1 : (Math.sin(t / 900 + n.phase) + 1) / 2;
         const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 10 + pulse * 6);
-        g.addColorStop(0, `rgba(${dark ? '167,139,250' : '124,58,237'},${.35 + pulse * .2})`);
-        g.addColorStop(1, 'rgba(124,58,237,0)');
+        g.addColorStop(0, `rgba(${dark ? accentRGB.l : accentRGB.p2},${.35 + pulse * .2})`);
+        g.addColorStop(1, `rgba(${accentRGB.p2},0)`);
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(n.x, n.y, 16, 0, Math.PI * 2); ctx.fill();
       }
-      ctx.fillStyle = `rgba(${n.hub ? (dark ? '196,181,253' : '109,91,240') : dotRGB},${dark ? .8 : .55})`;
+      ctx.fillStyle = `rgba(${n.hub ? (dark ? accentRGB.l : accentRGB.p2) : dotRGB},${dark ? .8 : .55})`;
       ctx.beginPath(); ctx.arc(n.x, n.y, n.hub ? n.r + 1 : n.r, 0, Math.PI * 2); ctx.fill();
     }
   }
@@ -932,4 +941,40 @@ if (isTouch) {
 
   requestAnimationFrame(loop);
   setEnabled(enabled);
+})();
+
+// ===== 14. Theme color picker =====
+(function () {
+  const btn = document.getElementById('accentBtn');
+  const pop = document.getElementById('accentPop');
+  if (!btn || !pop) return;
+  const opts = pop.querySelectorAll('.accent-opt');
+  const root = document.documentElement;
+
+  function mark(name) {
+    opts.forEach(o => {
+      const on = o.dataset.accent === name;
+      o.classList.toggle('active', on);
+      o.setAttribute('aria-checked', on);
+    });
+  }
+  function apply(name) {
+    root.classList.add('accent-anim');
+    if (name === 'ocean') root.removeAttribute('data-accent');
+    else root.setAttribute('data-accent', name);
+    try { localStorage.setItem('accent', name); } catch (e) {}
+    readAccent();
+    mark(name);
+    setTimeout(() => root.classList.remove('accent-anim'), 500);
+  }
+  mark(root.getAttribute('data-accent') || 'ocean');
+
+  function toggle(open) {
+    pop.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+  }
+  btn.addEventListener('click', e => { e.stopPropagation(); toggle(!pop.classList.contains('open')); });
+  opts.forEach(o => o.addEventListener('click', e => { e.stopPropagation(); apply(o.dataset.accent); setTimeout(() => toggle(false), 250); }));
+  document.addEventListener('click', e => { if (!pop.contains(e.target)) toggle(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') toggle(false); });
 })();
