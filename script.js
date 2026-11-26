@@ -497,7 +497,7 @@ readAccent();
       actions: () => waBtn },
 
     { id: 'services', words: ['service', 'services', 'offer', 'what do you do', 'kya karte', 'kaam kya', 'help me', 'provide'],
-      reply: `Through <strong>Horizonium Tech</strong>, Mudasir offers:<ul><li><strong>Web Development</strong>: business websites, WordPress, WooCommerce</li><li><strong>Custom Software</strong>: management systems</li><li><strong>AI Solutions</strong>: chatbots, AI phone receptionist, automation</li><li><strong>Digital Services</strong>: SEO, social media design, Etsy SEO</li><li><strong>AI Videos &amp; Graphic Design</strong></li><li><strong>Custom E-books</strong></li></ul>`,
+      reply: `Mudasir offers:<ul><li><strong>Web Development</strong>: business websites, WordPress, WooCommerce</li><li><strong>Custom Software</strong>: management systems</li><li><strong>AI Solutions</strong>: chatbots, AI phone receptionist, automation</li><li><strong>Digital Services</strong>: SEO, social media design, Etsy SEO</li><li><strong>AI Videos &amp; Graphic Design</strong></li><li><strong>Custom E-books</strong></li></ul>`,
       actions: () => go('services', 'See all services') },
 
     { id: 'web', words: ['website', 'web site', 'wordpress', 'woocommerce', 'elementor', 'online store', 'ecommerce', 'e-commerce', 'landing page', 'site'],
@@ -525,7 +525,7 @@ readAccent();
       actions: () => waBtn },
 
     { id: 'ebook', words: ['ebook', 'e-book', 'book', 'books', 'guide', 'lead magnet', 'course'],
-      reply: `Horizonium Tech creates <strong>custom branded e-books</strong>: lead magnets, guides and course material for businesses, coaches, schools and creators.`,
+      reply: `Mudasir creates <strong>custom branded e-books</strong>: lead magnets, guides and course material for businesses, coaches, schools and creators.`,
       actions: () => waBtn },
 
     { id: 'time', words: ['time', 'how long', 'days', 'deadline', 'delivery', 'kab tak', 'kitne din', 'duration', 'fast'],
@@ -539,9 +539,9 @@ readAccent();
       reply: `Some recent work:<ul><li>Travel Agency Software (booking &amp; accounts)</li><li>School Attendance Software (fingerprint, Urdu UI)</li><li>Al Ufuq Travel &amp; Tours website</li><li>Horizonium Tech website</li><li>AI product videos &amp; graphic designs</li></ul>Mudasir has <strong>100+ projects</strong> and <strong>100+ happy clients</strong>.`,
       actions: () => go('projects', 'View all work') },
 
-    { id: 'about', words: ['who', 'about', 'mudassir', 'founder', 'ceo', 'owner', 'horizonium', 'company', 'aap kaun'],
-      reply: `<strong>Muhammad Mudasir</strong> is a software developer and the <strong>Founder &amp; CEO of Horizonium Tech</strong>, a digital company building websites, custom software, AI tools and digital services for businesses, schools and agencies.`,
-      actions: () => go('about', 'Read more') + `<a href="https://horizoniumtech.com/" target="_blank" rel="noopener">horizoniumtech.com</a>` },
+    { id: 'about', words: ['who', 'about', 'mudassir', 'mudasir', 'experience', 'background', 'aap kaun'],
+      reply: `<strong>Muhammad Mudasir</strong> is a full-stack software developer from Karachi with <strong>3+ years</strong> of experience building websites, custom management software, AI tools and digital content for businesses, schools and agencies. He is open to new opportunities`,
+      actions: () => go('about', 'Read more') + `<a href="cv/Mudassir-Khan-CV.pdf" download>Download CV</a>` },
 
     { id: 'contact', words: ['contact', 'whatsapp', 'phone', 'number', 'call', 'email', 'mail', 'reach', 'hire', 'talk', 'baat', 'raabta', 'rabta'],
       reply: `You can reach Mudasir directly:<ul><li>WhatsApp / Phone: <strong>+92 314 1356104</strong></li><li>Email: <strong>mk5208694@gmail.com</strong></li></ul>WhatsApp is the fastest way to get a reply.`,
